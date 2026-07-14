@@ -7,13 +7,13 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		A9C264DB3005D81A00131E49 /* RrcipeExplorer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RrcipeExplorer.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A9C264DB3005D81A00131E49 /* RecipeExplorer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RecipeExplorer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		A9C264DD3005D81A00131E49 /* RrcipeExplorer */ = {
+		A9C264DD3005D81A00131E49 /* RecipeExplorer */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = RrcipeExplorer;
+			path = RecipeExplorer;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -32,7 +32,7 @@
 		A9C264D23005D81A00131E49 = {
 			isa = PBXGroup;
 			children = (
-				A9C264DD3005D81A00131E49 /* RrcipeExplorer */,
+				A9C264DD3005D81A00131E49 /* RecipeExplorer */,
 				A9C264DC3005D81A00131E49 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -40,7 +40,7 @@
 		A9C264DC3005D81A00131E49 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				A9C264DB3005D81A00131E49 /* RrcipeExplorer.app */,
+				A9C264DB3005D81A00131E49 /* RecipeExplorer.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -48,9 +48,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		A9C264DA3005D81A00131E49 /* RrcipeExplorer */ = {
+		A9C264DA3005D81A00131E49 /* RecipeExplorer */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = A9C264E63005D81B00131E49 /* Build configuration list for PBXNativeTarget "RrcipeExplorer" */;
+			buildConfigurationList = A9C264E63005D81B00131E49 /* Build configuration list for PBXNativeTarget "RecipeExplorer" */;
 			buildPhases = (
 				A9C264D73005D81A00131E49 /* Sources */,
 				A9C264D83005D81A00131E49 /* Frameworks */,
@@ -61,13 +61,13 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				A9C264DD3005D81A00131E49 /* RrcipeExplorer */,
+				A9C264DD3005D81A00131E49 /* RecipeExplorer */,
 			);
-			name = RrcipeExplorer;
+			name = RecipeExplorer;
 			packageProductDependencies = (
 			);
 			productName = RrcipeExplorer;
-			productReference = A9C264DB3005D81A00131E49 /* RrcipeExplorer.app */;
+			productReference = A9C264DB3005D81A00131E49 /* RecipeExplorer.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -85,7 +85,7 @@
 					};
 				};
 			};
-			buildConfigurationList = A9C264D63005D81A00131E49 /* Build configuration list for PBXProject "RrcipeExplorer" */;
+			buildConfigurationList = A9C264D63005D81A00131E49 /* Build configuration list for PBXProject "RecipeExplorer" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -99,7 +99,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				A9C264DA3005D81A00131E49 /* RrcipeExplorer */,
+				A9C264DA3005D81A00131E49 /* RecipeExplorer */,
 			);
 		};
 /* End PBXProject section */
@@ -309,7 +309,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		A9C264D63005D81A00131E49 /* Build configuration list for PBXProject "RrcipeExplorer" */ = {
+		A9C264D63005D81A00131E49 /* Build configuration list for PBXProject "RecipeExplorer" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				A9C264E43005D81B00131E49 /* Debug */,
@@ -318,7 +318,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		A9C264E63005D81B00131E49 /* Build configuration list for PBXNativeTarget "RrcipeExplorer" */ = {
+		A9C264E63005D81B00131E49 /* Build configuration list for PBXNativeTarget "RecipeExplorer" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				A9C264E73005D81B00131E49 /* Debug */,
