@@ -8,115 +8,188 @@
 //
 //  
 
+//
+//  RecipeViewModel.swift
+//  RecipeExplorer
+//
+//  Created by SELVARAJ THYAGARAJAN on 2026-07-13.
+//
+
+//
+//  RecipeViewModel.swift
+//  RecipeExplorer
+//
+
 import Foundation
 import SwiftUI
 import Combine
 
-// @MainActor ensures that all changes affecting the user interface
-// are performed safely on the main thread.
+// All UI-related changes are performed on the main thread.
 @MainActor
 final class RecipeViewModel: ObservableObject {
+    // MARK: - Published properties
 
-    // SwiftUI refreshes the observing views whenever recipes changes.
-    @Published var recipes: [Recipe]
+    // Contains every recipe available during the current app session.
+    @Published private(set) var recipes: [Recipe]
 
-    // Stores text entered in the search field.
+    // Text entered into the searchable field.
     @Published var searchText: String = ""
 
-    // Stores the category selected in the segmented Picker.
+    // Category selected by the user.
     @Published var selectedCategory: RecipeCategory = .all
 
-    // Using an optional parameter prevents the Swift 6
-    // main-actor warning caused by using sampleRecipes
-    // directly as a default argument.
-    init(recipes: [Recipe]? = nil) {
-        self.recipes = recipes ?? Recipe.sampleRecipes
+    // Sort method selected by the user.
+    @Published var selectedSortOption: RecipeSortOption = .name
+
+    // Contains UUID strings for recipes marked as favourites.
+    @Published private(set) var favoriteIDs: Set<String> = []
+
+    // MARK: - UserDefaults key
+
+    private let favoriteStorageKey = "favoriteRecipeIDs"
+
+    // MARK: - Initialization
+
+    init(recipes: [Recipe] = SampleRecipes.all) {
+        self.recipes = recipes
+        loadFavorites()
     }
 
-    // Returns recipes that match both the selected category
-    // and the search text.
-    var filteredRecipes: [Recipe] {
+    // MARK: - Filtered and sorted recipes
 
-        recipes.filter { recipe in
+    var displayedRecipes: [Recipe] {
+        var results = recipes
 
-            // Show all categories when .all is selected.
-            let matchesCategory =
-                selectedCategory == .all ||
-                recipe.category == selectedCategory
+        let cleanedSearch = searchText.trimmingCharacters(
+            in: .whitespacesAndNewlines
+        )
 
-            // Remove unnecessary spaces from the search text.
-            let cleanedSearchText = searchText.trimmingCharacters(
-                in: .whitespacesAndNewlines
-            )
-
-            let matchesSearch: Bool
-
-            // When the search bar is empty, every recipe
-            // passes the search condition.
-            if cleanedSearchText.isEmpty {
-                matchesSearch = true
-            } else {
-
-                // Combine all ingredients into one searchable string.
-                let ingredientText = recipe.ingredients.joined(
-                    separator: " "
-                )
-
-                matchesSearch =
+        // Feature 1: Search.
+        if !cleanedSearch.isEmpty {
+            results = results.filter { recipe in
+                let nameMatches =
                     recipe.name.localizedCaseInsensitiveContains(
-                        cleanedSearchText
-                    ) ||
-                    recipe.category.rawValue.localizedCaseInsensitiveContains(
-                        cleanedSearchText
-                    ) ||
-                    ingredientText.localizedCaseInsensitiveContains(
-                        cleanedSearchText
+                        cleanedSearch
                     )
+
+                let categoryMatches =
+                    recipe.category.rawValue
+                        .localizedCaseInsensitiveContains(cleanedSearch)
+
+                let ingredientMatches =
+                    recipe.ingredients.contains { ingredient in
+                        ingredient.localizedCaseInsensitiveContains(
+                            cleanedSearch
+                        )
+                    }
+
+                return nameMatches ||
+                    categoryMatches ||
+                    ingredientMatches
+            }
+        }
+
+        // Feature 2: Category filtering.
+        if selectedCategory != .all {
+            results = results.filter { recipe in
+                recipe.category == selectedCategory
+            }
+        }
+
+        // Feature 3: Sorting.
+        switch selectedSortOption {
+        case .name:
+            results.sort { first, second in
+                first.name.localizedCaseInsensitiveCompare(second.name)
+                    == .orderedAscending
             }
 
-            return matchesCategory && matchesSearch
+        case .cookingTime:
+            results.sort { first, second in
+                first.cookingTime < second.cookingTime
+            }
+
+        case .rating:
+            results.sort { first, second in
+                first.rating > second.rating
+            }
         }
+
+        return results
     }
 
-    // Returns only recipes marked as favourites.
     var favoriteRecipes: [Recipe] {
-        recipes.filter { $0.isFavorite }
+        recipes.filter { recipe in
+            isFavorite(recipe)
+        }
     }
 
-    // Adds a new recipe at the beginning of the list.
+    var favoriteCount: Int {
+        favoriteRecipes.count
+    }
+
+    // MARK: - Recipe management
+
     func addRecipe(_ recipe: Recipe) {
-        recipes.insert(recipe, at: 0)
+        recipes.append(recipe)
     }
 
-    // Changes the favourite status of a selected recipe.
-    func toggleFavorite(for recipe: Recipe) {
-
-        guard let index = recipes.firstIndex(
-            where: { $0.id == recipe.id }
-        ) else {
-            return
-        }
-
-        recipes[index].isFavorite.toggle()
-    }
-
-    // Deletes a specific recipe.
     func deleteRecipe(_ recipe: Recipe) {
-        recipes.removeAll { $0.id == recipe.id }
+        recipes.removeAll { storedRecipe in
+            storedRecipe.id == recipe.id
+        }
+
+        favoriteIDs.remove(recipe.id.uuidString)
+        saveFavorites()
     }
 
-    // Deletes recipes using indexes supplied by a SwiftUI List.
-    func deleteRecipes(at offsets: IndexSet) {
+    // MARK: - Favourite management
 
-        // The indexes come from filteredRecipes.
-        // First identify the actual recipes represented by those indexes.
-        let recipesToDelete = offsets.map {
-            filteredRecipes[$0]
+    func isFavorite(_ recipe: Recipe) -> Bool {
+        favoriteIDs.contains(recipe.id.uuidString)
+    }
+
+    func toggleFavorite(_ recipe: Recipe) {
+        let recipeID = recipe.id.uuidString
+
+        if favoriteIDs.contains(recipeID) {
+            favoriteIDs.remove(recipeID)
+        } else {
+            favoriteIDs.insert(recipeID)
         }
 
-        // Delete the matching recipes from the main recipes collection.
-        for recipe in recipesToDelete {
-            deleteRecipe(recipe)
-        }
+        saveFavorites()
+    }
+
+    func clearAllFavorites() {
+        favoriteIDs.removeAll()
+        saveFavorites()
+    }
+
+    // MARK: - Filter management
+
+    func resetFilters() {
+        searchText = ""
+        selectedCategory = .all
+        selectedSortOption = .name
+    }
+
+    // MARK: - Persistence
+
+    private func saveFavorites() {
+        let storedIDs = Array(favoriteIDs)
+
+        UserDefaults.standard.set(
+            storedIDs,
+            forKey: favoriteStorageKey
+        )
+    }
+
+    private func loadFavorites() {
+        let storedIDs = UserDefaults.standard.stringArray(
+            forKey: favoriteStorageKey
+        ) ?? []
+
+        favoriteIDs = Set(storedIDs)
     }
 }

@@ -5,68 +5,77 @@
 //  Created by SELVARAJ THYAGARAJAN on 2026-07-13.
 //
 
+//
+//  RecipeRowView.swift
+//  RecipeExplorer
+//
+
 import SwiftUI
 
-// RecipeRowView displays one recipe inside the List.
 struct RecipeRowView: View {
-    
     let recipe: Recipe
-    
+    let isFavorite: Bool
+
     var body: some View {
         HStack(spacing: 14) {
-            
-            // Recipe icon.
-            Image(systemName: recipe.symbolName)
-                .font(.title2)
-                .foregroundStyle(.green)
-                .frame(width: 50, height: 50)
-                .background(
-                    Circle()
-                        .fill(.green.opacity(0.12))
-                )
-                .accessibilityHidden(true)
-            
-            // Recipe name and supporting information.
-            VStack(alignment: .leading, spacing: 5) {
-                
+            ZStack {
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(.orange.opacity(0.15))
+
+                Image(systemName: recipe.symbolName)
+                    .resizable()
+                    .scaledToFit()
+                    .foregroundStyle(.orange)
+                    .padding(18)
+            }
+            .frame(width: 85, height: 85)
+
+            VStack(alignment: .leading, spacing: 6) {
                 HStack {
                     Text(recipe.name)
                         .font(.headline)
-                    
-                    if recipe.isFavorite {
+                        .foregroundStyle(.primary)
+
+                    Spacer()
+
+                    if isFavorite {
                         Image(systemName: "heart.fill")
                             .foregroundStyle(.red)
-                            .accessibilityLabel("Favourite recipe")
+                            .accessibilityLabel("Favourite")
                     }
                 }
-                
+
                 Text(recipe.category.rawValue)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
-                
-                Label(
-                    "\(recipe.preparationTime) minutes",
-                    systemImage: "clock"
-                )
+
+                HStack(spacing: 14) {
+                    Label(
+                        "\(recipe.cookingTime) min",
+                        systemImage: "clock"
+                    )
+
+                    Label(
+                        recipe.rating.formatted(
+                            .number.precision(.fractionLength(1))
+                        ),
+                        systemImage: "star.fill"
+                    )
+                }
                 .font(.caption)
                 .foregroundStyle(.secondary)
             }
-            
-            Spacer()
-            
-            Image(systemName: "chevron.right")
-                .font(.caption)
-                .foregroundStyle(.tertiary)
-                .accessibilityHidden(true)
         }
         .padding(.vertical, 5)
     }
 }
 
-#Preview {
-    List {
+struct RecipeRowView_Previews: PreviewProvider {
+    static var previews: some View {
         RecipeRowView(
-            recipe: Recipe.sampleRecipes[0]
+            recipe: SampleRecipes.all[0],
+            isFavorite: true
         )
+        .padding()
     }
 }

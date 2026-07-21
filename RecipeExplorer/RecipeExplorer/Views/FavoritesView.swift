@@ -5,56 +5,73 @@
 //  Created by SELVARAJ THYAGARAJAN on 2026-07-13.
 //
 
+//
+//  FavoritesView.swift
+//  RecipeExplorer
+//
+
 import SwiftUI
 
-// FavoritesView displays only recipes whose
-// isFavorite property is true.
 struct FavoritesView: View {
-    
     @ObservedObject var viewModel: RecipeViewModel
-    
+
     var body: some View {
         Group {
             if viewModel.favoriteRecipes.isEmpty {
-                ContentUnavailableView(
-                    "No Favourites",
-                    systemImage: "heart.slash",
-                    description: Text(
-                        "Swipe a recipe or use the heart button to add it to your favourites."
-                    )
-                )
+                emptyFavoritesView
             } else {
                 List(viewModel.favoriteRecipes) { recipe in
                     NavigationLink {
                         RecipeDetailView(
-                            viewModel: viewModel,
-                            recipe: recipe
+                            recipe: recipe,
+                            viewModel: viewModel
                         )
                     } label: {
-                        RecipeRowView(recipe: recipe)
+                        RecipeRowView(
+                            recipe: recipe,
+                            isFavorite: true
+                        )
                     }
-                    .swipeActions(edge: .trailing) {
-                        Button {
-                            viewModel.toggleFavorite(for: recipe)
-                        } label: {
-                            Label(
-                                "Unfavourite",
-                                systemImage: "heart.slash"
-                            )
-                        }
-                        .tint(.orange)
+                }
+                .listStyle(.plain)
+            }
+        }
+        .navigationTitle("Favourites")
+        .toolbar {
+            if !viewModel.favoriteRecipes.isEmpty {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Clear") {
+                        viewModel.clearAllFavorites()
                     }
                 }
             }
         }
-        .navigationTitle("Favourites")
+    }
+
+    private var emptyFavoritesView: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "heart.slash")
+                .font(.system(size: 55))
+                .foregroundStyle(.secondary)
+
+            Text("No Favourites Yet")
+                .font(.title2.bold())
+
+            Text(
+                "Open a recipe and tap the heart button to add it here."
+            )
+            .multilineTextAlignment(.center)
+            .foregroundStyle(.secondary)
+            .padding(.horizontal)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 
-#Preview {
-    NavigationStack {
-        FavoritesView(
-            viewModel: RecipeViewModel()
-        )
+struct FavoritesView_Previews: PreviewProvider {
+    static var previews: some View {
+        NavigationStack {
+            FavoritesView(viewModel: RecipeViewModel())
+        }
     }
 }

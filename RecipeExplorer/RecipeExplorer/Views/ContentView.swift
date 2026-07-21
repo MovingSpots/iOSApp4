@@ -5,214 +5,241 @@
 //  Created by SELVARAJ THYAGARAJAN on 2026-07-13.
 //
 
+//
+//  ContentView.swift
+//  RecipeExplorer
+//
+
 import SwiftUI
 
 struct ContentView: View {
-    
-    // StateObject creates and owns one ViewModel instance
-    // for the lifetime of this screen.
+    // Creates and owns the single main ViewModel instance.
     @StateObject private var viewModel = RecipeViewModel()
-    
-    // Controls whether the Add Recipe sheet is visible.
-    @State private var showAddRecipeSheet = false
-    
-    // Stores the recipe that the user selected for deletion.
-    @State private var recipePendingDeletion: Recipe?
-    
-    // Controls the delete confirmation alert.
-    @State private var showDeleteConfirmation = false
-    
+
+    @State private var layout: RecipeLayout = .list
+    @State private var showingAddRecipe = false
+
+    private let gridColumns = [
+        GridItem(
+            .adaptive(minimum: 160),
+            spacing: 12
+        )
+    ]
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                
-                // FEATURE 3:
-                // Segmented Picker used to filter categories.
-                categoryPicker
-                
-                // Display either an empty state or the recipe List.
-                if viewModel.filteredRecipes.isEmpty {
+                categorySelector
+
+                if viewModel.displayedRecipes.isEmpty {
                     emptyResultsView
                 } else {
-                    recipeList
+                    recipeCollection
                 }
             }
-            .navigationTitle("Recipe Explorer")
-            
-            // FEATURE 2:
-            // Search bar connected to searchText in the ViewModel.
+            .navigationTitle("RecipeExplorer")
             .searchable(
                 text: $viewModel.searchText,
                 prompt: "Search recipes or ingredients"
             )
-            
             .toolbar {
-                
-                // Navigate to the favourites screen.
-                ToolbarItem(placement: .topBarLeading) {
-                    NavigationLink {
-                        FavoritesView(viewModel: viewModel)
-                    } label: {
-                        Image(systemName: "heart.fill")
-                    }
-                    .tint(.red)
-                    .accessibilityLabel("View favourite recipes")
-                }
-                
-                // Open the Add Recipe sheet.
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        showAddRecipeSheet = true
-                    } label: {
-                        Image(systemName: "plus")
-                    }
-                    .accessibilityLabel("Add a new recipe")
-                }
+                leadingToolbarItems
+                trailingToolbarItems
             }
-            
-            // FEATURE 4:
-            // Display AddRecipeView as a modal sheet.
-            .sheet(isPresented: $showAddRecipeSheet) {
+            .sheet(isPresented: $showingAddRecipe) {
                 AddRecipeView(viewModel: viewModel)
             }
-            
-            // Ask for confirmation before deleting a recipe.
-            .alert(
-                "Delete Recipe?",
-                isPresented: $showDeleteConfirmation,
-                presenting: recipePendingDeletion
-            ) { recipe in
-                
-                Button("Cancel", role: .cancel) {
-                    recipePendingDeletion = nil
-                }
-                
-                Button("Delete", role: .destructive) {
-                    viewModel.deleteRecipe(recipe)
-                    recipePendingDeletion = nil
-                }
-                
-            } message: { recipe in
-                Text(
-                    "Are you sure you want to delete \(recipe.name)?"
-                )
-            }
         }
     }
-    
-    // MARK: - Category Picker
-    
-    private var categoryPicker: some View {
-        Picker(
-            "Recipe Category",
-            selection: $viewModel.selectedCategory
-        ) {
-            ForEach(RecipeCategory.allCases) { category in
-                Text(category.rawValue)
-                    .tag(category)
+
+    // Feature 2: Category filtering.
+    private var categorySelector: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 10) {
+                ForEach(RecipeCategory.allCases) { category in
+                    Button {
+                        withAnimation {
+                            viewModel.selectedCategory = category
+                        }
+                    } label: {
+                        Text(category.rawValue)
+                            .font(.subheadline.weight(.semibold))
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 8)
+                            .foregroundStyle(
+                                viewModel.selectedCategory == category
+                                    ? .white
+                                    : .primary
+                            )
+                            .background(
+                                viewModel.selectedCategory == category
+                                    ? Color.orange
+                                    : Color.secondary.opacity(0.15)
+                            )
+                            .clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
+                }
             }
+            .padding(.horizontal)
+            .padding(.vertical, 10)
         }
-        .pickerStyle(.segmented)
-        .padding()
     }
-    
-    // MARK: - Recipe List
-    
+
+    @ViewBuilder
+    private var recipeCollection: some View {
+        // Feature 5: List and grid layouts.
+        if layout == .list {
+            recipeList
+        } else {
+            recipeGrid
+        }
+    }
+
     private var recipeList: some View {
-        List {
-            ForEach(viewModel.filteredRecipes) { recipe in
-                
-                // FEATURE 1:
-                // NavigationLink opens RecipeDetailView.
-                NavigationLink {
-                    RecipeDetailView(
-                        viewModel: viewModel,
-                        recipe: recipe
-                    )
-                } label: {
-                    RecipeRowView(recipe: recipe)
-                }
-                
-                // FEATURE 5:
-                // Swipe from right to left to delete.
-                .swipeActions(edge: .trailing) {
-                    Button(role: .destructive) {
-                        prepareToDelete(recipe)
-                    } label: {
-                        Label("Delete", systemImage: "trash")
-                    }
-                }
-                
-                // Swipe from left to right to favourite.
-                .swipeActions(edge: .leading) {
-                    Button {
-                        viewModel.toggleFavorite(for: recipe)
-                    } label: {
-                        Label(
-                            recipe.isFavorite
-                                ? "Unfavourite"
-                                : "Favourite",
-                            systemImage: recipe.isFavorite
-                                ? "heart.slash"
-                                : "heart"
-                        )
-                    }
-                    .tint(recipe.isFavorite ? .orange : .pink)
-                }
-                
-                // FEATURE 6:
-                // Long-press a recipe to open a context menu.
-                .contextMenu {
-                    
-                    Button {
-                        viewModel.toggleFavorite(for: recipe)
-                    } label: {
-                        Label(
-                            recipe.isFavorite
-                                ? "Remove from Favourites"
-                                : "Add to Favourites",
-                            systemImage: recipe.isFavorite
-                                ? "heart.slash"
-                                : "heart"
-                        )
-                    }
-                    
-                    Button(role: .destructive) {
-                        prepareToDelete(recipe)
-                    } label: {
-                        Label("Delete Recipe", systemImage: "trash")
-                    }
-                }
-            }
-            
-            // This also supports standard List deletion
-            // when Edit mode is used.
-            .onDelete(perform: viewModel.deleteRecipes)
+        List(viewModel.displayedRecipes) { recipe in
+            recipeNavigationLink(recipe)
         }
         .listStyle(.plain)
     }
-    
-    // MARK: - Empty Search Result
-    
-    private var emptyResultsView: some View {
-        ContentUnavailableView(
-            "No Recipes Found",
-            systemImage: "magnifyingglass",
-            description: Text(
-                "Try another search word or select a different category."
+
+    private var recipeGrid: some View {
+        ScrollView {
+            LazyVGrid(
+                columns: gridColumns,
+                spacing: 12
+            ) {
+                ForEach(viewModel.displayedRecipes) { recipe in
+                    recipeGridNavigationLink(recipe)
+                }
+            }
+            .padding()
+        }
+    }
+
+    private func recipeNavigationLink(
+        _ recipe: Recipe
+    ) -> some View {
+        NavigationLink {
+            RecipeDetailView(
+                recipe: recipe,
+                viewModel: viewModel
             )
-        )
+        } label: {
+            RecipeRowView(
+                recipe: recipe,
+                isFavorite: viewModel.isFavorite(recipe)
+            )
+        }
+    }
+
+    private func recipeGridNavigationLink(
+        _ recipe: Recipe
+    ) -> some View {
+        NavigationLink {
+            RecipeDetailView(
+                recipe: recipe,
+                viewModel: viewModel
+            )
+        } label: {
+            RecipeCardView(
+                recipe: recipe,
+                isFavorite: viewModel.isFavorite(recipe)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var emptyResultsView: some View {
+        VStack(spacing: 15) {
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 50))
+                .foregroundStyle(.secondary)
+
+            Text("No Recipes Found")
+                .font(.title2.bold())
+
+            Text("Try another search word or category.")
+                .foregroundStyle(.secondary)
+
+            Button("Reset Filters") {
+                viewModel.resetFilters()
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(.orange)
+        }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
-    
-    // MARK: - Helper Function
-    
-    private func prepareToDelete(_ recipe: Recipe) {
-        recipePendingDeletion = recipe
-        showDeleteConfirmation = true
+
+    @ToolbarContentBuilder
+    private var leadingToolbarItems: some ToolbarContent {
+        ToolbarItem(placement: .navigationBarLeading) {
+            NavigationLink {
+                FavoritesView(viewModel: viewModel)
+            } label: {
+                HStack(spacing: 4) {
+                    Image(systemName: "heart.fill")
+
+                    if viewModel.favoriteCount > 0 {
+                        Text("\(viewModel.favoriteCount)")
+                    }
+                }
+            }
+            .accessibilityLabel("Open favourites")
+        }
+    }
+
+    @ToolbarContentBuilder
+    private var trailingToolbarItems: some ToolbarContent {
+        ToolbarItemGroup(placement: .navigationBarTrailing) {
+            // Feature 3: Sorting menu.
+            Menu {
+                Picker(
+                    "Sort Recipes",
+                    selection: $viewModel.selectedSortOption
+                ) {
+                    ForEach(RecipeSortOption.allCases) { option in
+                        Text(option.rawValue)
+                            .tag(option)
+                    }
+                }
+            } label: {
+                Image(systemName: "arrow.up.arrow.down")
+            }
+            .accessibilityLabel("Sort recipes")
+
+            // Feature 5: Layout switch.
+            Button {
+                withAnimation(.easeInOut) {
+                    layout = layout == .list
+                        ? .grid
+                        : .list
+                }
+            } label: {
+                Image(
+                    systemName: layout == .list
+                        ? "square.grid.2x2"
+                        : "list.bullet"
+                )
+            }
+            .accessibilityLabel(
+                layout == .list
+                    ? "Show grid"
+                    : "Show list"
+            )
+
+            Button {
+                showingAddRecipe = true
+            } label: {
+                Image(systemName: "plus")
+            }
+            .accessibilityLabel("Add recipe")
+        }
     }
 }
 
-#Preview {
-    ContentView()
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView()
+    }
 }
