@@ -1,78 +1,75 @@
-# iOSApp4 – Recipe Explorer
+# RecipeXplorer — iOSApp4
 
-Recipe Explorer is a progressive SwiftUI prototype created for Assignment 7
-of the MWD3A iOS Development course at triOS College.
+RecipeXplorer is a SwiftUI recipe-browsing application created for the MWD3A iOS Development course. It began as a progressive prototype in Assignment 7 and was expanded in Assignment 8 with six additional SwiftUI features.
 
-## App Theme
+## Assignment 8 — Six New Features
 
-The application helps users browse, search, filter and manage a collection
-of healthy recipes. Users can view recipe details, add new recipes, mark
-recipes as favourites and delete recipes.
+1. **Searchable recipe collection** — A searchable modifier filters recipes by name, category, and ingredients as the user types.
+2. **Category filtering** — A horizontally scrolling set of category buttons lets the user display all recipes or one category.
+3. **Recipe sorting** — A toolbar menu sorts the visible recipes alphabetically, by cooking time, or by rating.
+4. **Persistent favourites** — Users can add or remove favourites. Favourite recipe IDs are saved with `@AppStorage`, so they remain available after the app restarts.
+5. **List and grid layouts** — A toolbar button switches between `List` and `LazyVGrid`, with animation to make the change easier to follow.
+6. **System sharing** — `ShareLink` opens the iOS share sheet so a recipe summary can be shared through Messages, Mail, Notes, and other supported apps.
 
-## Six SwiftUI Features
+## SwiftUI Concepts Used
 
-### 1. NavigationStack and NavigationLink
+* `NavigationStack` and `NavigationLink`
+* `List`, `ScrollView`, and `LazyVGrid`
+* `searchable(text:prompt:)`
+* `Menu` and `Picker`
+* `@State`, `@AppStorage`, and computed properties
+* A custom empty-results view
+* `ShareLink`
+* `withAnimation`
+* Reusable views and model types
 
-NavigationStack manages navigation between the recipe list, recipe detail
-screen and favourites screen. NavigationLink opens the selected recipe.
+## Requirements
 
-### 2. Searchable Interface
-
-The searchable modifier allows users to search recipes by recipe name,
-category or ingredient.
-
-### 3. Segmented Picker
-
-A segmented Picker filters recipes into All, Breakfast, Lunch, Dinner
-and Snack categories.
-
-### 4. Modal Sheet
-
-The Add Recipe form is presented using the sheet modifier. Users can enter
-a recipe name, category, ingredients, preparation time and instructions.
-
-### 5. Swipe Actions
-
-Users can swipe a recipe row to mark it as a favourite or delete it.
-
-### 6. Context Menu
-
-Users can press and hold a recipe row to display favourite and delete
-actions in a context menu.
-
-## Additional Features
-
-- ObservableObject ViewModel
-- Form validation
-- Confirmation alert before deletion
-- Favourite recipes screen
-- Reusable recipe row component
-- Empty search result screen
-- SF Symbols
-- Accessibility labels
-- Xcode previews
-
-## Technology
-
-- Swift
-- SwiftUI
-- Xcode
-- Git
-- GitHub
+* macOS with Xcode 15 or later
+* iOS 16.0 or later deployment target
+* Swift 5.9 or later
+* No third-party packages are required
 
 ## Project Structure
 
 ```text
-RecipeExplorer
-├── Models
-│   ├── Recipe.swift
-│   └── RecipeCategory.swift
-├── ViewModels
-│   └── RecipeViewModel.swift
-├── Views
+RecipeXplorer/
+├── RecipeXplorerApp.swift
+├── Models/
+│   └── Recipe.swift
+├── Data/
+│   └── SampleRecipes.swift
+├── Views/
 │   ├── ContentView.swift
-│   ├── RecipeRowView.swift
-│   ├── RecipeDetailView.swift
-│   ├── AddRecipeView.swift
-│   └── FavoritesView.swift
-└── RecipeExplorerApp.swift
+│   ├── RecipeCardView.swift
+│   └── RecipeDetailView.swift
+└── Assets.xcassets/
+AIReflection.md
+README.md
+```
+
+## Running the App
+
+1. Clone the repository.
+2. Open `RecipeXplorer.xcodeproj` in Xcode.
+3. Select an iPhone simulator, such as iPhone 16.
+4. Press **Command-B** to build.
+5. Press **Command-R** to run.
+6. Test searching, category filters, each sort order, favourites after relaunching, list/grid switching, and sharing.
+
+## Testing Completed
+
+* Confirmed the project builds without errors.
+* Confirmed search is case-insensitive and searches ingredients.
+* Confirmed category filters and sorting work together.
+* Confirmed the empty-results message appears when no recipe matches.
+* Confirmed favourites remain selected after closing and reopening the app.
+* Confirmed both list and grid layouts navigate to recipe details.
+* Confirmed `ShareLink` opens the simulator share sheet.
+
+## Author
+
+Selvaraj Thyagarajan
+MWD3A — iOS Development, Assignment 8
+
+
